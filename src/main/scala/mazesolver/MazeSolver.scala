@@ -70,7 +70,6 @@ def initGame(lines: Array[String] = defaultMazeLines, startEnergy: Int = 12)
 /** True when the cell at (row, col) is inside the grid and is not a wall. */
 def isWalkable(maze: Array[Array[Char]], row: Int, col: Int): Boolean = {
   row >= 0 && row < maze.length && col >= 0 && col < maze(row).length && maze(row)(col) != '#'
-}
 
 /** Translate a direction character into a (dRow, dCol) delta.
   *
@@ -80,8 +79,12 @@ def isWalkable(maze: Array[Array[Char]], row: Int, col: Int): Boolean = {
   *   Some((dr, dc)) for a recognised direction, None otherwise
   */
 def directionDelta(direction: Char): Option[(Int, Int)] =
-  // TODO: Map 'U', 'D', 'L', 'R' to their corresponding (dRow, dCol) coordinate offsets
-  None
+  direction match
+    case 'U' => Some((-1, 0))
+    case 'D' => Some((1, 0))
+    case 'L' => Some((0, -1))
+    case 'R' => Some((0, 1))
+    case _ => None
 
 /** Try to move the robot one step in the given direction.
   *
@@ -94,19 +97,34 @@ def moveRobot(
     maze: Array[Array[Char]],
     robot: Array[Int],
     direction: Char
-): Boolean =
-  // TODO: If the target cell in the given direction is walkable, update robot(0) and robot(1)
-  // in place and return true; otherwise return false
-  false
+): Boolean = {
+  directionDelta(direction) match {
+    case Some((dr, dc)) =>
+      val newRow = robot(0) + dr
+      val newCol = robot(1) + dc
+      if isWalkable(maze, newRow, newCol) then {
+        robot(0) = newRow
+        robot(1) = newCol
+        true
+      }
+      else false
+    case None => false
+  }
+}
 
 /** If the robot is standing on an energy cell ('C'), collect it.
   *
   * The cell is replaced with '.' and 1 is returned; otherwise 0.
   */
-def collectCell(maze: Array[Array[Char]], robot: Array[Int]): Int =
-  // TODO: If the robot is standing on an energy cell ('C'), replace it with '.' and return 1;
-  // otherwise return 0
-  0
+def collectCell(maze: Array[Array[Char]], robot: Array[Int]): Int = {
+  val row = robot(0)
+  val col = robot(1)
+  if maze(row)(col) == 'C' then {
+    maze (row)(col) = '.'
+    1
+  }
+  else 0
+}
 
 /** True when the robot is standing on the exit ('E'). */
 def isAtExit(maze: Array[Array[Char]], robot: Array[Int]): Boolean = {
@@ -128,7 +146,7 @@ def render(
   val rows = {
     for r <- maze.indices yield
       val cells =
-        for c <- maze(r).indicies yield
+        for c <- maze(r).indices yield
           if r == robot(0) && robot(1) then '@' else maze(r)(c)
       cells.mkString
   rows.mkString("\n") + "\n" + s"Energy: $energy Cells: $cellsCollected"
