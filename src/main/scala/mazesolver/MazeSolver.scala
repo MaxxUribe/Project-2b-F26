@@ -68,9 +68,11 @@ def initGame(lines: Array[String] = defaultMazeLines, startEnergy: Int = 12)
 // ─── Movement helpers ────────────────────────────────────────────────────────
 
 /** True when the cell at (row, col) is inside the grid and is not a wall. */
-def isWalkable(maze: Array[Array[Char]], row: Int, col: Int): Boolean =
+def isWalkable(maze: Array[Array[Char]], row: Int, col: Int): Boolean = {
   // TODO: Check if (row, col) is within maze bounds and not a wall ('#')
+
   false
+}
 
 /** Translate a direction character into a (dRow, dCol) delta.
   *
@@ -109,9 +111,9 @@ def collectCell(maze: Array[Array[Char]], robot: Array[Int]): Int =
   0
 
 /** True when the robot is standing on the exit ('E'). */
-def isAtExit(maze: Array[Array[Char]], robot: Array[Int]): Boolean =
-  // TODO: Return true if the robot is standing on the exit marker ('E')
-  false
+def isAtExit(maze: Array[Array[Char]], robot: Array[Int]): Boolean = {
+  maze(robot(0))(robot(1)) == 'E'
+}
 
 // ─── Rendering ───────────────────────────────────────────────────────────────
 
@@ -124,10 +126,16 @@ def render(
     robot: Array[Int],
     energy: Int,
     cellsCollected: Int = 0
-): String =
-  // TODO: Render the maze grid with '@' at the robot's current position,
-  // followed by a status line: s"Energy: $energy  Cells: $cellsCollected"
-  ""
+): String = {
+  val rows = {
+    for r <- maze.indices yield
+      val cells =
+        for c <- maze(r).indicies yield
+          if r == robot(0) && robot(1) then '@' else maze(r)(c)
+      cells.mkString
+  rows.mkString("\n") + "\n" + s"Energy: $energy Cells: $cellsCollected"
+  }
+}
 
 // ─── Game loop ───────────────────────────────────────────────────────────────
 
