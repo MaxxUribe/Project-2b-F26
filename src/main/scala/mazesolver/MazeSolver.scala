@@ -185,22 +185,22 @@ def playGame(
     startEnergy: Int = 12
 ): (Int, Int, Boolean) =
   var energy = startEnergy
-  var cells = 0 
+  var cells = 0
   var i = 0
   while i < moves.length && energy > 0 && !isAtExit(maze, robot) do
-    if moveRobot(maze, robot, moves(i)) then { 
+    if moveRobot(maze, robot, moves(i)) then
       energy -= 1
-      val collected = collectCell(maze, robot) 
-      cells += collected 
+      val collected = collectCell(maze, robot)
+      cells += collected
       energy += 3 * collected
     i += 1
-   (energy, cells, isAtExit(maze, robot))
-    
+  (energy, cells, isAtExit(maze, robot))
+
 
 // ─── Part 2: Parameter passing and aliasing ──────────────────────────────────
 
 /** Mutates the shared array — caller sees the change. */
-def moveNorth(position: Array[Int]): Unit = 
+def moveNorth(position: Array[Int]): Unit =
       position(0) -= 1
 
       /** Demonstrates that rebinding a local val cannot affect the caller's reference.
@@ -221,11 +221,11 @@ def localReset(position: Array[Int]): Unit =
   * @return
   *   the number of times action returned true
   */
-def repeatUntilStopped(action: => Boolean): Int = {
+def repeatUntilStopped(action: => Boolean): Int =
   var count = 0
   while action do count += 1
   count
-}
+
 
       // ─── Part 3: Recursive flood-fill scanner ────────────────────────────────────
 
@@ -251,16 +251,15 @@ def revealReachable(
     row: Int,
     col: Int
 ): Int =
-  // TODO: Reveal all reachable (non-wall) cells from (row, col) using recursive flood fill.
-  // Base cases:
-  //   - out of bounds -> return 0
-  //   - wall ('#') -> return 0
-  //   - already revealed -> return 0
-  // Recursive step:
-  //   - mark (row, col) as revealed
-  //   - recurse into all four neighbours (up, down, left, right)
-  //   - return 1 + sum of newly revealed neighbours
-  0
+  if !isWalkable(maze, row, col) || revealed(row)(col) then 0
+  else
+    revealed(row)(col) = true
+    val up = revealReachable(maze, revealed, row - 1, col)
+    val down = revealReachable(maze, revealed, row + 1, col)
+    val left = revealReachable(maze, revealed, row, col -1)
+    val right = revealReachable(maze, revealed, row, col + 1)
+    1 + up + down + left + right
+
 
 /** Iterative flood-fill using an explicit mutable stack (stretch goal / extra credit).
   *
