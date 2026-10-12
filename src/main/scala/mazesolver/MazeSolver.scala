@@ -275,9 +275,20 @@ def revealReachableIterative(
     startRow: Int,
     startCol: Int
 ): Int =
-  // TODO (Extra Credit): Implement iterative flood-fill using an explicit mutable stack
-  // (scala.collection.mutable.Stack).
-  0
+  val stack = scala.collection.mutable.Stack[(Int, Int)]()
+  var count = 0
+  stack.push((startRow, startCol))
+  while stack.nonEmpty do
+    val (row, col) = stack.pop()
+    if isWalkable(maze, row, col) && !revealed(row)(col) then
+      revealed(row)(col) = true
+      count += 1
+      stack.push((row - 1, col))
+      stack.push((row + 1, col))
+      stack.push((row, col - 1))
+      stack.push((row, col + 1))
+  count
+
 
 /** Help message describing all interactive REPL commands. */
 def helpMessage(): String =
