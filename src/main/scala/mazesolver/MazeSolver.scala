@@ -200,19 +200,16 @@ def playGame(
 // ─── Part 2: Parameter passing and aliasing ──────────────────────────────────
 
 /** Mutates the shared array — caller sees the change. */
-def moveNorth(position: Array[Int]): Unit =
-  // TODO: Mutate position(0) to move north (decrement row by 1)
-  ()
+def moveNorth(position: Array[Int]): Unit = 
+      position(0) -= 1
 
-/** Demonstrates that rebinding a local val cannot affect the caller's reference.
+      /** Demonstrates that rebinding a local val cannot affect the caller's reference.
   *
   * NOTE: `position = Array(1, 1)` would be rejected by Scala because parameters are vals, not vars.
   * This version shows the same principle.
   */
 def localReset(position: Array[Int]): Unit =
-  // TODO: Explore parameter passing semantics: create a local val `replacement = Array(1, 1)`
-  // and demonstrate why the caller's position array is unaffected.
-  ()
+      val replacement = Array(1, 1)
 
 // ─── Part 2 (cont.): Call by name ────────────────────────────────────────────
 
@@ -224,12 +221,13 @@ def localReset(position: Array[Int]): Unit =
   * @return
   *   the number of times action returned true
   */
-def repeatUntilStopped(action: => Boolean): Int =
-  // TODO: Repeatedly evaluate call-by-name action until it evaluates to false,
-  // returning the number of times action returned true.
-  0
+def repeatUntilStopped(action: => Boolean): Int = {
+  var count = 0
+  while action do count += 1
+  count
+}
 
-// ─── Part 3: Recursive flood-fill scanner ────────────────────────────────────
+      // ─── Part 3: Recursive flood-fill scanner ────────────────────────────────────
 
 /** Create a blank revealed grid of the same dimensions as the maze. */
 def makeRevealed(maze: Array[Array[Char]]): Array[Array[Boolean]] =
