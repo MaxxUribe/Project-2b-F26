@@ -579,25 +579,72 @@ class SampleMazesTest:
 
 class StudentMazeSolverTest:
 
-  // TODO: Add your own unit tests here to thoroughly test edge cases:
-  // - Boundary conditions (robot trapped by walls on all 4 sides)
-  // - Energy exhaustion before reaching the exit
-  // - Mazes with multiple energy cells or alternate branches
-  // - Emergency scanner on mazes with cyclic / loop-containing corridors
+  val smallLines: Array[String] = Array(
+    "#####",
+    "#R.C#",
+    "#.#.#",
+    "#..E#",
+    "#####"
+  )
 
-  @Test @DisplayName("TODO: student test for completely trapped robot")
+  @Test
+  @DisplayName("trapped robot: all four moves are blocked and energy is preserved")
   def testTrappedRobot(): Unit =
-    // TODO: Construct a maze where the robot is enclosed by walls '#', attempt moves in all 4 directions,
-    // and verify the robot cannot move and energy is preserved.
-    assertTrue(true)
+    val (maze, robot, _, _) = initGame(Array("###", "#R#", "###"), 5)
+    for dir <- "UDLR" do
+      assertFalse(moveRobot(maze, robot, dir), s"move $dir should be blocked")
+      assertArrayEquals(Array(1, 1), robot)
+    val (energy, cells, escaped) = playGame(maze, robot, "UDLRUDLR", 5)
+    assertEquals(5, energy, "blocked moves cost no energy")
+    assertEquals(0, cells)
+    assertFalse(escaped)
 
-  @Test @DisplayName("TODO: student test for energy exhaustion mid-journey")
+  @Test
+  @DisplayName("energy exhaustion: robot is stranded before reaching the exit")
   def testEnergyExhaustion(): Unit =
-    // TODO: Verify that a robot running out of energy becomes stranded and returns (0, cells, false).
-    assertTrue(true)
+    // The exit needs 4 moves but the robot only has 3 units of energy
+    val (maze, robot, _, _) = initGame(Array("#######", "#R...E#", "#######"), 3)
+    val (energy, cells, escaped) = playGame(maze, robot, "RRRR", 3)
+    assertEquals(0, energy)
+    assertEquals(0, cells)
+    assertFalse(escaped)
+    assertArrayEquals(Array(1, 4), robot, "robot stops where its energy ran out")
 
-  @Test @DisplayName("TODO: student test for scanner on cyclic corridors")
+  @Test
+  @DisplayName("scanner terminates on a looping corridor and counts each cell once")
   def testScannerCyclicCorridor(): Unit =
-    // TODO: Verify that recursive flood fill terminates correctly without infinite recursion
-    // when corridors form loops.
-    assertTrue(true)
+    // A ring of 8 floor cells around a wall pillar: a flood fill that marked cells
+    // after recursing would loop forever here.
+    val maze = parseMaze(Array("#####", "#...#", "#.#.#", "#...#", "#####"))
+    val revealed = makeRevealed(maze)
+    assertEquals(8, revealReachable(maze, revealed, 1, 1))
+    assertFalse(revealed(2)(2), "the pillar in the middle is a wall")
+    assertEquals(8, revealReachable(maze, makeRevealed(maze), 3, 3))
+
+  @Test
+  @DisplayName("collecting a cell on the last unit of energy saves the robot")
+  def testCellOnLastEnergy(): Unit =
+    // Energy 2: second move uses the last unit but lands on a cell worth +3
+    val (maze, robot, _, _) = initGame(Array("#######", "#R.C.E#", "#######"), 2)
+    assertEquals((1, 1, true), playGame(maze, robot, "RRRR", 2))
+    val (maze2, robot2, _, _) = initGame(Array("#######", "#R...E#", "#######"), 2)
+    assertEquals((0, 0, false), playGame(maze2, robot2, "RRRR", 2))
+
+  @Test
+  @DisplayName("multiple energy cells each give +3 and are counted")
+  def testMultipleCells(): Unit =
+    // 6 moves to the exit with only 4 energy: possible only thanks to two cells
+    val (maze, robot, _, _) = initGame(Array("#########", "#R.C.C.E#", "#########"), 4)
+    assertEquals((4, 2, true), playGame(maze, robot, "RRRRRR", 4))
+    assertEquals('.', maze(1)(3), "first cell consumed")
+    assertEquals('.', maze(1)(5), "second cell consumed")
+
+  @Test
+  @DisplayName("moves after reaching the exit are ignored")
+  def testMovesAfterExitIgnored(): Unit =
+    val (maze, robot, _, _) = initGame(smallLines, 10)
+    val (energy, cells, escaped) = playGame(maze, robot, "DDRRLLUU", 10)
+    assertTrue(escaped)
+    assertEquals(6, energy, "only the 4 moves before the exit are charged")
+    assertEquals(0, cells)
+    assertArrayEquals(Array(3, 3), robot, "robot stays on the exit")
