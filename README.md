@@ -254,9 +254,9 @@ Trace the three moves `R`, `D`, `D` on the `smallLines` 5×5 maze starting at `(
 | Step | Move Command | Attempted Pos | Walkable? | Updated Robot Pos | Remaining Energy | Cells Collected | Note |
 |:----:|:------------:|:-------------:|:---------:|:-----------------:|:----------------:|:---------------:|:-----|
 | 0 | *Init* | — | — | `(1, 1)` | 10 | 0 | Initial state |
-| 1 | `R` | `(1, 2)` | [TODO: Yes/No] | [TODO] | [TODO] | [TODO] | [TODO] |
-| 2 | `D` | `(2, 2)` | [TODO: Yes/No] | [TODO] | [TODO] | [TODO] | [TODO] |
-| 3 | `D` | `(2, 2)` | [TODO: Yes/No] | [TODO] | [TODO] | [TODO] | [TODO] |
+| 1 | `R` | `(1, 2)` | Yes           | (1,2) | 9 | 0 | Moved onto floor; one energy spent. |
+| 2 | `D` | `(2, 2)` | No | (1,2) | 9 | 0 | Wall blocks the move; blocked moves cost no energy. |
+| 3 | `D` | `(2, 2)` | No | (1,2) | 9 | [0 | Same wall blocks the move again; state is unchanged. |
 
 ---
 
@@ -268,17 +268,55 @@ Illustrate with an ASCII diagram the stack and heap layout during execution of:
 
 ```
 [TODO: Provide your ASCII memory diagram here showing Stack Frames, Callee Parameters, and Heap Arrays]
+
+A) moveNorth(pos)
+STACK
++---------------------------+
+| Caller frame: pos -> H1   |
++---------------------------+
+| Callee frame: position -> H1 |
++---------------------------+
+HEAP
++---------------------------+
+| H1: Array[Int] [row, col] |
+| row is changed in place   |
++---------------------------+
+
+B) localReset(pos)
+STACK
++------------------------------+
+| Caller frame: pos -> H1      |
++------------------------------+
+| Callee frame: position -> H1 |
+|                replacement -> H2 |
++------------------------------+
+HEAP
++---------------------------+
+| H1: caller's [row, col]   |
++---------------------------+
+| H2: new array [1, 1]      |
++---------------------------+
+
+The callee parameters are copies of the array reference. Both position and
+pos point to H1, so element mutation is visible to the caller. In localReset,
+replacement points to a new H2 array; pos still points to H1, and H1 is unchanged.
+
+
+
+
+
+
 ```
 
 **Written Explanation:**
 1. Why does `moveNorth` mutate the caller's array, whereas passing an `Int` variable (e.g. `energy`) cannot be mutated by the callee?
-   > [TODO: Your answer here]
+   > Scala passes arguments by value. For an array, the copied value is a reference to the same mutable array, so changing `position(0)` changes the shared object the caller sees. An `Int` argument is a copied number; assigning a new value to the callee's parameter changes only that local copy. The callee cannot reassign the caller's variable.
 
 2. Why does Scala reject `position = Array(1, 1)` in parameter lists, and what happens when you rebind a local `val replacement = Array(1, 1)`?
-   > [TODO: Your answer here]
+   > A parameter is an immutable `val` binding, so Scala rejects assignment to `position`. A local `val replacement = Array(1, 1)` creates a separate array and binds the local name `replacement` to it. It neither rebinds the caller's `pos` nor changes the original array.
 
 3. How does call-by-name (`action: => Boolean` in `repeatUntilStopped`) fundamentally differ from passing a reference or passing a primitive value?
-   > [TODO: Your answer here]
+   >  With call-by-name, `action: => Boolean` is an unevaluated expression (implemented through a thunk) that is evaluated each time the method refers to it. In the loop, each condition check runs the expression again, allowing its side effects or changing state to affect the next result. Ordinary call-by-value evaluates an argument once before the call and passes its resulting value; passing an array also passes a reference value, but does not defer an expression for repeated evaluation.
 
 ---
 
@@ -290,25 +328,40 @@ Given the 4×4 `tinyLines` maze:
 #..#
 #.##
 ####
-```
 Trace `revealReachable(maze, revealed, 1, 1)`:
 
-```
-[TODO: Show the sequence of activation records pushed and popped from the call stack, including arguments (row, col) and return values]
-```
+The function explores neighbors in the order up, down, left, right. Here `V` means already revealed; `W` means a wall. The diagram records the actual depth-first call sequence. A returned `0` base-case frame is popped immediately.
+
+```text
+push (1,1)                         active cell; mark revealed
+  push (0,1)                       wall -> return 0, pop
+  push (2,1)                       active cell; mark revealed
+    push (1,1)                     already revealed -> return 0, pop
+    push (3,1)                     wall -> return 0, pop
+    push (2,0)                     wall -> return 0, pop
+    push (2,2)                     wall -> return 0, pop
+  return 1 from (2,1); pop         1 + 0 + 0 + 0 + 0
+  push (1,0)                       wall -> return 0, pop
+  push (1,2)                       active cell; mark revealed
+    push (0,2)                     wall -> return 0, pop
+    push (2,2)                     wall -> return 0, pop
+    push (1,1)                     already revealed -> return 0, pop
+    push (1,3)                     wall -> return 0, pop
+  return 1 from (1,2); pop         1 + 0 + 0 + 0 + 0
+return 3 from (1,1); pop           1 + 0 + 1 + 0 + 1
 
 **Questions:**
 1. What values are stored in each activation record (stack frame) on the JVM?
-   > [TODO: Your answer here]
+   > A frame conceptually holds the argument values (maze and revealed references plus row and col), the return location, and local results such as up, down, left, and right while the recursive calls finish. JVM/JIT details can optimize the physical representation, but these are the values the source-level call must preserve.
 
 2. Which invocations hit the base cases (out of bounds, wall `#`, or already revealed)?
-   > [TODO: Your answer here]
+   > No call goes out of bounds in this particular traversal because the outer ring is walls. Wall calls are (0,1), (3,1), (2,0), (2,2) from (2,1), (1,0), (0,2), (2,2), and (1,3). Already-revealed calls are (1,1) from (2,1) and (1,1) from (1,2). The starting call and calls at (2,1) and (1,2) are successful cell visits, not base cases.
 
 3. Why is marking `revealed(row)(col) = true` *prior* to recursive neighbor exploration essential to avoid infinite recursion?
-   > [TODO: Your answer here]
+   > The mark happens before descending into neighbors, so a path that loops back to the current cell sees it as already revealed and returns. Every walkable cell is processed at most once, which guarantees termination on a finite maze with cycles.
 
 4. What is the maximum theoretical stack depth in the worst-case maze of size $M \times N$?
-   > [TODO: Your answer here]
+   > At most M × N distinct walkable cells can be active across a depth-first chain, plus a final base-case call at the end of that chain. Thus the asymptotic worst-case call-stack depth is O(MN) (often described as up to MN successful cell frames, with a possible extra terminating frame). The actual JVM stack limit is much smaller than an arbitrary theoretical maze size.
 
 ---
 
@@ -316,11 +369,11 @@ Trace `revealReachable(maze, revealed, 1, 1)`:
 
 Compare `revealReachable` (recursive) with `revealReachableIterative` (explicit heap stack):
 * **Memory location of state:**
-  > [TODO: Your answer here]
+  > Recursive calls store pending work in JVM call-stack frames. The iterative version stores pending (row, col) pairs in a mutable stack object allocated on the heap; the maze and revealed grid are heap arrays in both versions.
 * **Risk of `StackOverflowError` vs. `OutOfMemoryError`:**
-  > [TODO: Your answer here]
+  > A sufficiently deep recursive traversal can exhaust the thread's limited call stack and throw StackOverflowError. The explicit stack avoids using one JVM frame per cell, so it avoids that recursion-depth failure; it still uses O(MN) heap space in the worst case and can contribute to OutOfMemoryError if the maze/pending work exceeds available heap. Heap capacity is not unlimited.
 * **Performance tradeoffs (function invocation overhead vs object allocation):**
-  > [TODO: Your answer here]
+  > Recursion is concise and each call performs a function invocation and uses a frame. The iterative version has loop and push/pop overhead and may allocate tuple/pair objects, but avoids deep recursive calls and gives explicit control over pending work. Exact speed depends on implementation and runtime; for this project, avoiding stack-depth limits is the main practical benefit.
 
 ---
 
@@ -328,10 +381,10 @@ Compare `revealReachable` (recursive) with `revealReachableIterative` (explicit 
 
 In this assignment, all state is represented using raw arrays (`Array[Array[Char]]`, `Array[Int]`) and loose variables passed into top-level procedures.
 1. What problems or vulnerabilities arise when multiple procedures directly read and mutate naked arrays?
-   > [TODO: Your answer here]
+   > Raw arrays allow any procedure with a reference to change maze cells or robot coordinates without enforcing shared rules. The maze and position are loosely related, so callers can pass inconsistent dimensions, invalid coordinates, or the wrong array; array indexes also make it easy to cause runtime errors. The meaning of values such as maze(row)(col) and robot(0) must be remembered everywhere. Changes in one procedure can silently affect another through aliasing, making bugs harder to locate and tests harder to isolate.
 
 2. How would an Object-Oriented or ADT-based design (e.g., `Maze`, `Robot`, `Cell`, `Position`) improve encapsulation, type safety, and maintainability in Project 2?
-   > [TODO: Your answer here]
+   > In an OO or ADT design, Maze could own the grid and validate bounds, while Robot could own its position and movement rules. A Position type could name row and column instead of relying on array indexes, and a Cell type or enum could make walls, floor, cells, and exits explicit. Encapsulation would route state changes through methods that preserve invariants, while types make invalid combinations harder to express. This organizes related data and behavior together, making the program easier to extend and maintain as the project grows.
 
 ---
 
