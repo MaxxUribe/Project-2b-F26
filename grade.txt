@@ -1,0 +1,147 @@
+================================================================================
+COMP 371 / COMP 471 Project 1: Maze Rescue — Team Grade Report
+================================================================================
+
+Team Identifier: Team_4
+Repository Name: Project-2b-F26
+Repository URL:  https://github.com/MaxxUribe/Project-2b-F26.git
+Branch:          main
+HEAD Commit:     7e07c8cdd1744e7bec12d2f2d95390ca2dd79221
+
+--------------------------------------------------------------------------------
+10-CRITERION RUBRIC BREAKDOWN
+--------------------------------------------------------------------------------
+
+1. Navigation & Bounds (Max: 1.0)
+   Score: 1.0 / 1.0
+   Evidence:
+   - `isWalkable`, `directionDelta`, and in-place `moveRobot` are correctly implemented.
+   - All navigation unit tests pass.
+
+2. Game Mechanics & State (Max: 0.5)
+   Score: 0.5 / 0.5
+   Evidence:
+   - `collectCell`, `isAtExit`, `playMoves`, and `playGame` correctly manage energy, cell collection, and termination.
+   - All game mechanics unit tests pass.
+
+3. Rendering (Max: 0.5)
+   Score: 0.5 / 0.5
+   Evidence:
+   - `render` overlays '@' at the robot's coordinates without mutating the maze. Status line formatted as:
+     `Energy: $energy  Cells: $cellsCollected`
+   - Rendering unit tests pass.
+
+4. Parameter Passing Lab (Max: 0.5)
+   Score: 0.5 / 0.5
+   Evidence:
+   - `moveNorth` and `localReset` implemented correctly.
+   - Written responses in Deliverable 2 clearly explain reference copying vs value copying and why parameter rebinding is rejected.
+   - Tests pass.
+
+5. Call-by-Name Evaluation (Max: 0.5)
+   Score: 0.5 / 0.5
+   Evidence:
+   - `repeatUntilStopped` implemented with while loop evaluating call-by-name action.
+   - Deliverable 2 explains repeated evaluation of the by-name argument on each iteration.
+   - Tests pass.
+
+6. Recursive Flood Fill (Max: 1.0)
+   Score: 1.0 / 1.0
+   Evidence:
+   - `revealReachable` implements base cases (bounds, wall, already revealed).
+   - Visited cell marked before recursion.
+   - Returns 1 + sum of newly revealed neighbors.
+   - Tests pass.
+
+7. Memory Diagram & Stack Trace (Max: 0.5)
+   Score: 0.5 / 0.5
+   Evidence:
+   - Deliverable 2 ASCII stack and heap diagram provided.
+   - Deliverable 3 activation-record trace and questions 1-4 completed.
+
+8. State Table & OO Reflection (Max: 0.5)
+   Score: 0.5 / 0.5
+   Evidence:
+   - Deliverable 1 state-transition table for R, D, D completed.
+   - Deliverable 5 reflection on procedural arrays versus OO/ADT abstractions completed.
+
+9. Student Unit Tests (Max: 0.5)
+   Score: 0.5 / 0.5
+   Evidence:
+   - Implemented 6 original unit tests in `StudentMazeSolverTest`:
+     * `testTrappedRobot`
+     * `testEnergyExhaustion`
+     * `testScannerCyclicCorridor`
+     * `testCellOnLastEnergy`
+     * `testMultipleCells`
+     * `testMovesAfterExitIgnored`
+   - All student tests pass.
+
+10. Scala 3 Style & Strict Typing (Max: 0.5)
+    Score: 0.25 / 0.5
+    Evidence:
+    - Code conforms to `-Yexplicit-nulls`, `-language:strictEquality`, and `-Werror`.
+    - No prohibited custom classes, case classes, traits, or ADTs introduced.
+    - Shortcoming: Fails `sbt scalafmtCheckAll` (`src/main/scala/mazesolver/MazeSolver.scala isn't formatted properly`). Awarding partial credit (0.25 / 0.5) for style and strict typing.
+
+--------------------------------------------------------------------------------
+WRITTEN REPORT REVIEW
+--------------------------------------------------------------------------------
+- Deliverable 1: Complete state-transition table for moves R, D, D.
+- Deliverable 2: Memory diagram and answers on parameter passing completed.
+- Deliverable 3: Call stack trace and questions 1-4 completed.
+- Deliverable 4: Recursion vs iteration comparison completed.
+- Deliverable 5: Architectural reflection completed.
+
+--------------------------------------------------------------------------------
+TEST, BUILD, & FORMATTING COMMAND RESULTS
+--------------------------------------------------------------------------------
+- `sbt compile`: PASS (Exit code 0)
+- `sbt test`: PASS (Exit code 0, 64/64 tests passed: 58 starter + 6 student)
+- `sbt scalafmtCheckAll`: FAIL (Exit code 1; MazeSolver.scala requires formatting)
+- `sbt clean coverage test coverageReport`: PASS (Exit code 0; Statement coverage: 75.60%, Branch coverage: 60.42%)
+- `sbt stage`: PASS (Exit code 0)
+
+--------------------------------------------------------------------------------
+PROJECT STRUCTURE & GIT HISTORY OBSERVATIONS
+--------------------------------------------------------------------------------
+- Standard project structure maintained.
+- 11 git commits showing steady development.
+
+--------------------------------------------------------------------------------
+AI TRANSCRIPT & AFFIDAVIT EVIDENCE
+--------------------------------------------------------------------------------
+- In README.md, the AI Usage Disclosure section was left incomplete: neither checkbox was checked, no AI tools, prompts, transcript link, or affidavit was provided (left as `[TODO: AI transcript link or statement]`), and no `doc/` directory exists.
+
+--------------------------------------------------------------------------------
+DEDUCTIONS
+--------------------------------------------------------------------------------
+- Missing AI transcript or affidavit stating AI was not used: -1.0 point.
+  (Formatting failure was accounted for in Criterion 10; not double-penalized).
+Deductions: -1.0 point
+
+--------------------------------------------------------------------------------
+EXTRA CREDIT
+--------------------------------------------------------------------------------
+- `revealReachableIterative` implemented correctly with explicit mutable stack.
+- Deliverable 4 compares call stack vs heap stack.
+Extra Credit Awarded: +0.5 / 0.5
+
+--------------------------------------------------------------------------------
+FINAL SCORE CALCULATION
+--------------------------------------------------------------------------------
+Base score:   5.75 / 6.0
+Deductions:  -1.0 point
+Extra credit: 0.5 / 0.5
+Final score:  5.25
+
+Arithmetic: 5.75 (base) - 1.0 (deduction) + 0.5 (extra credit) = 5.25
+
+--------------------------------------------------------------------------------
+STUDENT-FACING FEEDBACK
+--------------------------------------------------------------------------------
+Functional code, student tests, and written deliverables were all executed well, and the extra credit flood fill was completed. However, points were lost due to:
+1. `sbt scalafmtCheckAll` failing because `MazeSolver.scala` was not formatted with `scalafmt`.
+2. Missing AI usage disclosure: neither checkbox was marked and no affidavit or transcript link was provided.
+Make sure to run `sbt scalafmtAll` and complete the required disclosures before submitting.
+
